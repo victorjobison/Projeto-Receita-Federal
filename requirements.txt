@@ -1,10 +1,15 @@
+# 1. Pacotes de API/validacao mantidos por compatibilidade com o projeto.
 fastapi
 uvicorn
 pydantic
 email-validator
+
+# 2. Pacotes de seguranca, JWT e banco de dados.
 bcrypt
 python-jose[cryptography]
 psycopg[binary]
+
+# 3. Pacotes usados diretamente pela aplicacao Flask.
 Flask
 requests
 python-dotenv

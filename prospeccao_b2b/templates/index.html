@@ -1,7 +1,9 @@
 {% extends "shared/base.html" %}
+{# 1. Esta tela herda o layout base e troca apenas titulo/conteudo. #}
 {% block title %}Empresas · Prospeccao B2B{% endblock %}
 
 {% block content %}
+<!-- 2. Area superior: explica a busca e envia CNPJ para consulta na BrasilAPI. -->
 <section class="page-head">
     <div>
         <h1>Busca e qualificacao de empresas</h1>
@@ -13,6 +15,7 @@
     </form>
 </section>
 
+<!-- 3. Formulario GET: cada campo vira filtro na URL e no controller. -->
 <section class="panel">
     <form method="get" class="filters">
         <label>CNAE<input name="cnae" value="{{ filtros.cnae }}" placeholder="6201 ou tecnologia"></label>
@@ -32,8 +35,10 @@
     </form>
 </section>
 
+<!-- 4. Lista empresas retornadas pelo controller; se vazia, mostra estado inicial. -->
 <section class="grid">
     {% for empresa in empresas %}
+        <!-- 5. Cada card resume uma empresa e permite cria-la/atualiza-la como lead. -->
         <article class="card">
             <div class="card-head">
                 <h2>{{ empresa.razao_social }}</h2>
@@ -49,12 +54,14 @@
                 <div><dt>Situacao</dt><dd>{{ empresa.situacao or "-" }}</dd></div>
             </dl>
             <form method="post" action="{{ url_for('companies.criar_lead') }}" class="form-stack compact">
+                <!-- 6. O CNPJ identifica a empresa usada pelo service para criar o lead. -->
                 <input type="hidden" name="cnpj" value="{{ empresa.cnpj }}">
                 <textarea name="observacoes" placeholder="Observacao inicial"></textarea>
                 <button type="submit">{{ "Atualizar lead" if empresa.lead_id else "Adicionar lead" }}</button>
             </form>
         </article>
     {% else %}
+        <!-- 7. O bloco else do Jinja aparece quando nao existem empresas no resultado. -->
         <div class="panel empty">
             <h2>Nenhuma empresa encontrada</h2>
             <p>Consulte um CNPJ para salvar dados reais no catalogo e depois aplique os filtros.</p>

@@ -1,7 +1,9 @@
 {% extends "shared/base.html" %}
+{# 1. Relatorio acessivel apenas por administradores. #}
 {% block title %}Relatorio · Prospeccao B2B{% endblock %}
 
 {% block content %}
+<!-- 2. Cabecalho explica que a tabela resume leads por status do funil. -->
 <section class="page-head">
     <div>
         <h1>Relatorio global</h1>
@@ -9,6 +11,7 @@
     </div>
 </section>
 
+<!-- 3. Cada linha vem pronta do AdminService.relatorio_global. -->
 <section class="table-panel">
     <table>
         <thead>
@@ -24,6 +27,7 @@
         </thead>
         <tbody>
             {% for row in relatorio %}
+                <!-- 4. Mostra totais por status e total geral do consultor. -->
                 <tr>
                     <td>{{ row.consultor }}</td>
                     <td>{{ row.status["Lead Novo"] }}</td>
@@ -34,6 +38,7 @@
                     <td><strong>{{ row.total }}</strong></td>
                 </tr>
             {% else %}
+                <!-- 5. Aparece quando ainda nao ha consultores/leads no relatorio. -->
                 <tr><td colspan="7">Nenhum dado para exibir.</td></tr>
             {% endfor %}
         </tbody>

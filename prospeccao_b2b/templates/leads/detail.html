@@ -1,7 +1,9 @@
 {% extends "shared/base.html" %}
+{# 1. Tela de detalhe de lead validada por LeadService.validar_acesso. #}
 {% block title %}Lead · Prospeccao B2B{% endblock %}
 
 {% block content %}
+<!-- 2. Cabecalho mostra identificacao da empresa e acao de remover lead. -->
 <section class="page-head">
     <div>
         <h1>{{ lead.razao_social }}</h1>
@@ -12,8 +14,10 @@
     </form>
 </section>
 
+<!-- 3. Primeira coluna atualiza o funil; segunda registra nova interacao. -->
 <section class="two-columns">
     <article class="panel">
+        <!-- 4. Dados combinados de lead, empresa e consultor. -->
         <h2>Dados do lead</h2>
         <dl class="data-list">
             <div><dt>Status</dt><dd>{{ lead.status }}</dd></div>
@@ -26,6 +30,7 @@
             <div><dt>Endereco</dt><dd>{{ lead.logradouro or "-" }}, {{ lead.numero or "-" }} - {{ lead.bairro or "-" }}</dd></div>
         </dl>
 
+        <!-- 5. POST altera status/observacoes depois de validacao no service. -->
         <form method="post" action="{{ url_for('leads.atualizar_status', lead_id=lead.id) }}" class="form-stack">
             <label>Status
                 <select name="status">
@@ -42,6 +47,7 @@
     </article>
 
     <article class="panel">
+        <!-- 6. POST cria uma nova entrada no historico de interacoes. -->
         <h2>Registrar interacao</h2>
         <form method="post" action="{{ url_for('leads.criar_interacao', lead_id=lead.id) }}" class="form-stack">
             <label>Tipo
@@ -59,10 +65,12 @@
     </article>
 </section>
 
+<!-- 7. Historico lista contatos e permite edicao conforme regra das 24 horas. -->
 <section class="panel">
     <h2>Historico de interacoes</h2>
     <div class="timeline">
         {% for item in interacoes %}
+            <!-- 8. Cada item representa uma interacao registrada no banco. -->
             <article class="timeline-item">
                 <div>
                     <strong>{{ item.tipo }}</strong>
@@ -78,12 +86,14 @@
                     <button type="submit" class="btn-ghost">Salvar</button>
                 </form>
                 {% if g.user.perfil == 'ADMIN' %}
+                    <!-- 9. Exclusao de interacao aparece somente para administradores. -->
                     <form method="post" action="{{ url_for('leads.excluir_interacao', interacao_id=item.id) }}" onsubmit="return confirm('Excluir esta interacao?')">
                         <button type="submit" class="danger">Excluir</button>
                     </form>
                 {% endif %}
             </article>
         {% else %}
+            <!-- 10. Estado vazio quando o lead ainda nao recebeu contatos. -->
             <p class="muted">Nenhuma interacao registrada.</p>
         {% endfor %}
     </div>

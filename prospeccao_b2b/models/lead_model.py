@@ -1,12 +1,16 @@
+"""Persistencia dos leads e relatorios do funil."""
+
 from db import execute, fetch_all, fetch_one
 
 
+# Status aceitos pelo funil; usados pelo model, services e templates.
 STATUS_LEAD = ["Lead Novo", "Em Contato", "Negociando", "Cliente", "Rejeitado"]
 
 
 class LeadModel:
     @staticmethod
     def create(empresa_id, consultor_id, observacoes=""):
+        # 1. Cria lead novo ou atualiza observacoes se ele ja existir.
         return execute(
             """
             INSERT INTO leads (empresa_id, consultor_id, status, observacoes)
@@ -25,6 +29,7 @@ class LeadModel:
 
     @staticmethod
     def find_by_id(lead_id):
+        # 2. Busca o lead junto com dados da empresa e do consultor.
         return fetch_one(
             """
             SELECT l.*,
@@ -43,13 +48,16 @@ class LeadModel:
 
     @staticmethod
     def list_filtered(user, filters, page_size=50):
+        # 3. Monta filtros dinamicos conforme perfil e campos da tela.
         where = []
         params = {"limit": page_size}
 
         if user["perfil"] != "ADMIN":
+            # 4. Consultor so enxerga os proprios leads.
             where.append("l.consultor_id = %(consultor_id)s")
             params["consultor_id"] = user["id"]
         elif filters.get("consultor_id"):
+            # 5. Admin pode filtrar por consultor especifico.
             where.append("l.consultor_id = %(consultor_id)s")
             params["consultor_id"] = filters["consultor_id"]
 
@@ -61,6 +69,7 @@ class LeadModel:
             where.append("(e.razao_social ILIKE %(busca)s OR e.cnpj ILIKE %(busca)s)")
             params["busca"] = f"%{filters['busca']}%"
 
+        # 6. Executa a listagem ordenando pelos leads atualizados mais recentes.
         where_sql = " AND ".join(where) if where else "TRUE"
         return fetch_all(
             f"""
@@ -79,6 +88,7 @@ class LeadModel:
 
     @staticmethod
     def update_status(lead_id, status, observacoes=None):
+        # 7. Atualiza o status e preserva observacoes quando vier None.
         return execute(
             """
             UPDATE leads
@@ -93,6 +103,7 @@ class LeadModel:
 
     @staticmethod
     def delete(lead_id):
+        # 8. Remove o lead; interacoes relacionadas caem por ON DELETE CASCADE.
         return execute(
             "DELETE FROM leads WHERE id = %(id)s RETURNING id",
             {"id": lead_id},
@@ -100,6 +111,7 @@ class LeadModel:
 
     @staticmethod
     def report_by_consultor_status():
+        # 9. Agrupa totais para o relatorio administrativo.
         return fetch_all(
             """
             SELECT u.nome AS consultor,

@@ -1,5 +1,7 @@
 # Projeto Prospeccao B2B
 
+<!-- Comentario geral: este README apresenta o projeto em passos curtos: primeiro o objetivo, depois a estrutura, os requisitos atendidos e por fim como executar. -->
+
 Sistema web em Flask organizado em MVC para prospeccao de vendas B2B com PostgreSQL, consulta de CNPJ via BrasilAPI, funil de leads, historico de interacoes e modulo administrativo.
 
 ## Estrutura

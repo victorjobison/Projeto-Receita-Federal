@@ -1,5 +1,10 @@
 COMO RODAR O SISTEMA PROSPECCAO B2B
 
+COMENTARIO GERAL:
+Este arquivo funciona como um passo a passo operacional. Leia de cima para baixo:
+primeiro prepare a pasta e o ambiente virtual, depois instale dependencias,
+configure o banco, inicialize as tabelas e por ultimo rode o servidor Flask.
+
 1. Entre na pasta da aplicacao:
    cd prospeccao_b2b
 

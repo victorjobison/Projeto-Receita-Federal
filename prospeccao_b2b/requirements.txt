@@ -1,6 +1,17 @@
+# 1. Framework web usado para rotas, templates e sessoes.
 Flask==3.0.3
+
+# 2. Driver PostgreSQL usado pelos models e pelo db.py.
 psycopg[binary]>=3.2.10,<3.4
+
+# 3. Cliente HTTP para consultar a BrasilAPI.
 requests==2.32.3
+
+# 4. Carrega variaveis do arquivo .env.
 python-dotenv==1.0.1
+
+# 5. Gera e verifica hashes seguros de senha.
 bcrypt>=4.1,<6
+
+# 6. Cria e assina tokens JWT da API.
 python-jose[cryptography]==3.3.0

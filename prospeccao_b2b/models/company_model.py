@@ -1,3 +1,5 @@
+"""Persistencia e filtros das empresas consultadas na BrasilAPI."""
+
 from db import execute, fetch_all, fetch_one
 from psycopg.types.json import Jsonb
 from utils.formatters import decimal_or_zero, only_numbers
@@ -6,11 +8,13 @@ from utils.formatters import decimal_or_zero, only_numbers
 class CompanyModel:
     @staticmethod
     def upsert_from_api(dados):
+        # 1. Normaliza os campos recebidos da API antes de gravar no banco.
         cnpj = only_numbers(dados.get("cnpj"))
         cnae_principal = str(dados.get("cnae_fiscal") or "")
         cnaes_secundarios = dados.get("cnaes_secundarios") or []
         socios = dados.get("qsa") or []
 
+        # 2. Insere empresa nova ou atualiza a existente pelo CNPJ.
         return execute(
             """
             INSERT INTO empresas (
@@ -71,6 +75,7 @@ class CompanyModel:
 
     @staticmethod
     def find_by_cnpj(cnpj):
+        # 3. Localiza empresa usando apenas os numeros do CNPJ.
         return fetch_one(
             "SELECT * FROM empresas WHERE cnpj = %(cnpj)s",
             {"cnpj": only_numbers(cnpj)},
@@ -78,15 +83,18 @@ class CompanyModel:
 
     @staticmethod
     def list_filtered(filters, consultor_id=None, page_size=50):
+        # 4. Monta partes do WHERE apenas para filtros preenchidos.
         where = []
         params = {"limit": page_size, "consultor_id": consultor_id}
 
         situacao = filters.get("situacao") or "ATIVA"
         if situacao != "TODAS":
+            # 5. Por padrao, mostra empresas ativas; "TODAS" remove o filtro.
             where.append("UPPER(COALESCE(e.situacao, '')) LIKE %(situacao)s")
             params["situacao"] = f"%{situacao.upper()}%"
 
         if filters.get("cnae"):
+            # 6. Busca CNAE no codigo principal, descricao e JSON de secundarios.
             where.append(
                 """
                 (
@@ -99,6 +107,7 @@ class CompanyModel:
             params["cnae"] = f"%{filters['cnae']}%"
 
         if filters.get("capital_min"):
+            # 7. Converte capital minimo para Decimal antes de comparar.
             where.append("e.capital_social >= %(capital_min)s")
             params["capital_min"] = decimal_or_zero(filters["capital_min"])
 
@@ -115,6 +124,7 @@ class CompanyModel:
             params["municipio"] = f"%{filters['municipio']}%"
 
         if filters.get("busca"):
+            # 8. Busca livre por razao social, nome fantasia ou CNPJ.
             where.append(
                 """
                 (
@@ -126,6 +136,7 @@ class CompanyModel:
             )
             params["busca"] = f"%{filters['busca']}%"
 
+        # 9. Junta os filtros e marca se a empresa ja virou lead do consultor.
         where_sql = " AND ".join(where) if where else "TRUE"
         return fetch_all(
             f"""

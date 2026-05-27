@@ -1,7 +1,9 @@
 {% extends "shared/base.html" %}
+{# 1. Tela de listagem do funil; permissao e filtros ficam no controller/model. #}
 {% block title %}Leads · Prospeccao B2B{% endblock %}
 
 {% block content %}
+<!-- 2. Cabecalho contextualiza a diferenca entre consultor e administrador. -->
 <section class="page-head">
     <div>
         <h1>Funil de prospeccao</h1>
@@ -9,6 +11,7 @@
     </div>
 </section>
 
+<!-- 3. Filtros enviados por GET para manter a URL compartilhavel. -->
 <section class="panel">
     <form method="get" class="filters lead-filters">
         <label>Status
@@ -20,6 +23,7 @@
             </select>
         </label>
         {% if g.user.perfil == 'ADMIN' %}
+            <!-- 4. Apenas admin pode escolher outro consultor no filtro. -->
             <label>Consultor
                 <select name="consultor_id">
                     <option value="">Todos</option>
@@ -36,6 +40,7 @@
     </form>
 </section>
 
+<!-- 5. Tabela de leads ja filtrados e autorizados para o usuario atual. -->
 <section class="table-panel">
     <table>
         <thead>
@@ -50,6 +55,7 @@
         </thead>
         <tbody>
             {% for lead in leads %}
+                <!-- 6. Cada linha abre a tela de detalhe do lead. -->
                 <tr>
                     <td>{{ lead.razao_social }}</td>
                     <td>{{ lead.cnpj }}</td>
@@ -59,6 +65,7 @@
                     <td><a class="btn-link" href="{{ url_for('leads.detalhe', lead_id=lead.id) }}">Abrir</a></td>
                 </tr>
             {% else %}
+                <!-- 7. Mensagem quando nenhum lead atende aos filtros. -->
                 <tr><td colspan="6">Nenhum lead encontrado.</td></tr>
             {% endfor %}
         </tbody>

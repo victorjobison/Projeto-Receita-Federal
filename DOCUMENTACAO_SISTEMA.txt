@@ -1,5 +1,10 @@
 DOCUMENTACAO DO SISTEMA PROSPECCAO B2B
 
+COMENTARIO GERAL:
+Este documento explica o sistema em ordem didatica. Primeiro mostra a arquitetura,
+depois descreve arquivo por arquivo, em seguida detalha os fluxos de uso e termina
+com as tabelas do banco e observacoes importantes.
+
 Este arquivo explica a organizacao do projeto, arquivo por arquivo, e mostra como as funcionalidades se conectam de forma logica.
 
 

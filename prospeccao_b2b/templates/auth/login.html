@@ -1,13 +1,16 @@
 {% extends "shared/base.html" %}
+{# 1. Tela de entrada: o controller processa GET e POST nesta mesma rota. #}
 {% block title %}Login · Prospeccao B2B{% endblock %}
 
 {% block content %}
+<!-- 2. Painel dividido entre texto de contexto e formulario de autenticacao. -->
 <section class="auth-panel">
     <div>
         <h1>Acesse a plataforma</h1>
         <p>Entre com seu e-mail e senha para buscar empresas, acompanhar leads e registrar interacoes.</p>
     </div>
 
+    <!-- 3. POST envia e-mail e senha para AuthService.authenticate. -->
     <form method="post" class="panel form-stack">
         <label>
             E-mail
@@ -18,6 +21,7 @@
             <input type="password" name="senha" required>
         </label>
         <button type="submit">Entrar</button>
+        <!-- 4. Link leva ao fluxo de recuperacao por token temporario. -->
         <a class="muted" href="{{ url_for('auth.recuperar_senha') }}">Esqueci minha senha</a>
     </form>
 </section>

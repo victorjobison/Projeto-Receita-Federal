@@ -1,7 +1,9 @@
 {% extends "shared/base.html" %}
+{# 1. Tela protegida por admin_required no controller. #}
 {% block title %}Consultores · Prospeccao B2B{% endblock %}
 
 {% block content %}
+<!-- 2. Cabecalho da area administrativa de usuarios. -->
 <section class="page-head">
     <div>
         <h1>Administracao de usuarios</h1>
@@ -9,8 +11,10 @@
     </div>
 </section>
 
+<!-- 3. Coluna esquerda cria usuario; coluna direita edita usuarios existentes. -->
 <section class="two-columns">
     <form method="post" action="{{ url_for('admin.criar_consultor') }}" class="panel form-stack">
+        <!-- 4. POST cria usuario com senha inicial convertida em hash pelo service. -->
         <h2>Novo usuario</h2>
         <label>Nome<input name="nome" required></label>
         <label>E-mail<input type="email" name="email" required></label>
@@ -28,6 +32,7 @@
         <h2>Usuarios cadastrados</h2>
         <div class="user-list">
             {% for user in consultores %}
+                <!-- 5. Cada linha e um formulario independente para atualizar o usuario. -->
                 <form method="post" action="{{ url_for('admin.editar_consultor', user_id=user.id) }}" class="user-row">
                     <input name="nome" value="{{ user.nome }}" required>
                     <input type="email" name="email" value="{{ user.email }}" required>

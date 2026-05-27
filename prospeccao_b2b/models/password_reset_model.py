@@ -1,9 +1,12 @@
+"""Persistencia dos tokens temporarios de recuperacao de senha."""
+
 from db import execute, fetch_one
 
 
 class PasswordResetModel:
     @staticmethod
     def create(user_id, token):
+        # 1. Cria token com validade de 1 hora para o usuario informado.
         return execute(
             """
             INSERT INTO password_reset_tokens (usuario_id, token, expira_em)
@@ -15,6 +18,7 @@ class PasswordResetModel:
 
     @staticmethod
     def find_valid(token):
+        # 2. Aceita apenas token existente, nao usado e ainda nao expirado.
         return fetch_one(
             """
             SELECT id, usuario_id, token
@@ -28,6 +32,7 @@ class PasswordResetModel:
 
     @staticmethod
     def mark_used(token_id):
+        # 3. Marca token como usado para impedir reutilizacao do link.
         return execute(
             """
             UPDATE password_reset_tokens

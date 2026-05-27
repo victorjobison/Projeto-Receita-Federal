@@ -1,3 +1,4 @@
+-- 1. Tabela de usuarios: guarda login, perfil e status de acesso.
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
@@ -8,6 +9,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     criado_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- 2. Tabela de empresas: armazena dados vindos da BrasilAPI e campos de consulta.
 CREATE TABLE IF NOT EXISTS empresas (
     id SERIAL PRIMARY KEY,
     cnpj VARCHAR(14) UNIQUE NOT NULL,
@@ -33,6 +35,7 @@ CREATE TABLE IF NOT EXISTS empresas (
     criado_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- 3. Tabela de leads: liga uma empresa a um consultor e ao status do funil.
 CREATE TABLE IF NOT EXISTS leads (
     id SERIAL PRIMARY KEY,
     empresa_id INT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
@@ -45,6 +48,7 @@ CREATE TABLE IF NOT EXISTS leads (
     UNIQUE (empresa_id, consultor_id)
 );
 
+-- 4. Tabela de interacoes: registra historico de contatos feitos em cada lead.
 CREATE TABLE IF NOT EXISTS interacoes (
     id SERIAL PRIMARY KEY,
     lead_id INT NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
@@ -54,6 +58,7 @@ CREATE TABLE IF NOT EXISTS interacoes (
     data_interacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- 5. Tokens de recuperacao: permitem redefinir senha por tempo limitado.
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id SERIAL PRIMARY KEY,
     usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -63,6 +68,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     criado_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- 6. Refresh tokens: permitem renovar JWTs da API sem novo login imediato.
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id SERIAL PRIMARY KEY,
     usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,

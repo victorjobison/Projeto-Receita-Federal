@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- 1. Define metadados basicos e deixa cada pagina trocar o titulo. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Prospeccao B2B{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- 2. Cabecalho compartilhado por todas as telas do sistema. -->
     <header class="topbar">
         <a class="brand" href="{{ url_for('companies.dashboard') }}">Prospeccao B2B</a>
         {% if g.user %}
+            <!-- 3. Se houver usuario logado, mostra o menu principal. -->
             <nav class="nav">
                 <a href="{{ url_for('companies.dashboard') }}">Empresas</a>
                 <a href="{{ url_for('leads.listar') }}">Leads</a>
@@ -19,6 +22,7 @@
                 {% endif %}
                 <a href="{{ url_for('companies.privacidade') }}">LGPD</a>
             </nav>
+            <!-- 4. Exibe usuario atual e envia POST para encerrar a sessao. -->
             <form method="post" action="{{ url_for('auth.logout') }}" class="logout-form">
                 <span>{{ g.user.nome }} · {{ g.user.perfil }}</span>
                 <button type="submit" class="btn-ghost">Sair</button>
@@ -27,6 +31,7 @@
     </header>
 
     <main class="container">
+        <!-- 5. Renderiza mensagens flash geradas pelos controllers. -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="flash-list">
@@ -37,6 +42,7 @@
             {% endif %}
         {% endwith %}
 
+        <!-- 6. Cada template filho injeta aqui o conteudo especifico da pagina. -->
         {% block content %}{% endblock %}
     </main>
 </body>
