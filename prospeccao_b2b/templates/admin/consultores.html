@@ -1,0 +1,45 @@
+{% extends "shared/base.html" %}
+{% block title %}Consultores · Prospeccao B2B{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <h1>Administracao de usuarios</h1>
+        <p>Cadastre consultores, altere perfil e bloqueie acessos inativos.</p>
+    </div>
+</section>
+
+<section class="two-columns">
+    <form method="post" action="{{ url_for('admin.criar_consultor') }}" class="panel form-stack">
+        <h2>Novo usuario</h2>
+        <label>Nome<input name="nome" required></label>
+        <label>E-mail<input type="email" name="email" required></label>
+        <label>Senha inicial<input type="password" name="senha" required></label>
+        <label>Perfil
+            <select name="perfil">
+                <option value="CONSULTOR">CONSULTOR</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+        </label>
+        <button type="submit">Cadastrar</button>
+    </form>
+
+    <section class="panel">
+        <h2>Usuarios cadastrados</h2>
+        <div class="user-list">
+            {% for user in consultores %}
+                <form method="post" action="{{ url_for('admin.editar_consultor', user_id=user.id) }}" class="user-row">
+                    <input name="nome" value="{{ user.nome }}" required>
+                    <input type="email" name="email" value="{{ user.email }}" required>
+                    <select name="perfil">
+                        <option value="CONSULTOR" {% if user.perfil == 'CONSULTOR' %}selected{% endif %}>CONSULTOR</option>
+                        <option value="ADMIN" {% if user.perfil == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                    </select>
+                    <label class="check"><input type="checkbox" name="ativo" {% if user.ativo %}checked{% endif %}> Ativo</label>
+                    <button type="submit">Salvar</button>
+                </form>
+            {% endfor %}
+        </div>
+    </section>
+</section>
+{% endblock %}

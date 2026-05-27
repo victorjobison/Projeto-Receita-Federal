@@ -1,0 +1,42 @@
+{% extends "shared/base.html" %}
+{% block title %}Relatorio · Prospeccao B2B{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <h1>Relatorio global</h1>
+        <p>Total de leads por consultor e por status do funil.</p>
+    </div>
+</section>
+
+<section class="table-panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Consultor</th>
+                <th>Lead Novo</th>
+                <th>Em Contato</th>
+                <th>Negociando</th>
+                <th>Cliente</th>
+                <th>Rejeitado</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in relatorio %}
+                <tr>
+                    <td>{{ row.consultor }}</td>
+                    <td>{{ row.status["Lead Novo"] }}</td>
+                    <td>{{ row.status["Em Contato"] }}</td>
+                    <td>{{ row.status["Negociando"] }}</td>
+                    <td>{{ row.status["Cliente"] }}</td>
+                    <td>{{ row.status["Rejeitado"] }}</td>
+                    <td><strong>{{ row.total }}</strong></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7">Nenhum dado para exibir.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

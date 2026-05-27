@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+email-validator
+bcrypt
+python-jose[cryptography]
+psycopg[binary]
+Flask
+requests
+python-dotenv

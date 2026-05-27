@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Prospeccao B2B{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('companies.dashboard') }}">Prospeccao B2B</a>
+        {% if g.user %}
+            <nav class="nav">
+                <a href="{{ url_for('companies.dashboard') }}">Empresas</a>
+                <a href="{{ url_for('leads.listar') }}">Leads</a>
+                {% if g.user.perfil == 'ADMIN' %}
+                    <a href="{{ url_for('admin.consultores') }}">Consultores</a>
+                    <a href="{{ url_for('admin.relatorio') }}">Relatorio</a>
+                {% endif %}
+                <a href="{{ url_for('companies.privacidade') }}">LGPD</a>
+            </nav>
+            <form method="post" action="{{ url_for('auth.logout') }}" class="logout-form">
+                <span>{{ g.user.nome }} · {{ g.user.perfil }}</span>
+                <button type="submit" class="btn-ghost">Sair</button>
+            </form>
+        {% endif %}
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

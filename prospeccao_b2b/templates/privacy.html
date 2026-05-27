@@ -1,0 +1,11 @@
+{% extends "shared/base.html" %}
+{% block title %}LGPD · Prospeccao B2B{% endblock %}
+
+{% block content %}
+<section class="panel readable">
+    <h1>Politica de privacidade e LGPD</h1>
+    <p>O sistema armazena dados empresariais consultados em APIs publicas de CNPJ e dados minimos de usuarios necessarios para autenticacao e auditoria operacional.</p>
+    <p>Senhas sao armazenadas apenas com hash bcrypt. O acesso aos leads e limitado por perfil: consultores visualizam seus proprios leads e administradores acessam a visao global.</p>
+    <p>Dados pessoais eventualmente presentes em quadros societarios devem ser usados somente para finalidade legitima de prospeccao B2B, respeitando principios de necessidade, finalidade e seguranca.</p>
+</section>
+{% endblock %}

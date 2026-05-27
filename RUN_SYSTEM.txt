@@ -1,0 +1,51 @@
+COMO RODAR O SISTEMA PROSPECCAO B2B
+
+1. Entre na pasta da aplicacao:
+   cd prospeccao_b2b
+
+2. Crie e ative o ambiente virtual:
+   python -m venv .venv
+   .\.venv\Scripts\activate
+
+   Se o PowerShell bloquear o Activate.ps1 com erro de Execution Policy, use esta opcao
+   somente para a janela atual do terminal:
+   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+   .\.venv\Scripts\Activate.ps1
+
+   Alternativa sem ativar o ambiente virtual:
+   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+   .\.venv\Scripts\python.exe init_db.py
+   .\.venv\Scripts\python.exe app.py
+
+3. Instale as dependencias:
+   pip install -r requirements.txt
+
+4. Configure o PostgreSQL:
+   - Crie um banco chamado prospeccao_db, ou ajuste DB_NAME no arquivo .env.
+   - Copie .env.example para .env.
+   - Ajuste DB_HOST, DB_PORT, DB_NAME, DB_USER e DB_PASSWORD.
+
+5. Crie as tabelas e o usuario administrador inicial:
+   python init_db.py
+
+   Login inicial padrao:
+   E-mail: admin@prospeccao.local
+   Senha: admin123
+
+   Para trocar antes de inicializar, altere ADMIN_EMAIL e ADMIN_PASSWORD no .env.
+
+6. Inicie o sistema:
+   python app.py
+
+7. Acesse no navegador:
+   http://127.0.0.1:5000
+
+OBSERVACOES
+
+- O sistema usa PostgreSQL e psycopg.
+- A consulta de CNPJ usa BrasilAPI: https://brasilapi.com.br/api/cnpj/v1/{cnpj}
+- Consultores visualizam apenas seus proprios leads.
+- Administradores visualizam todos os leads, gerenciam usuarios e acessam relatorio global.
+- A lista de leads respeita o limite maximo de 50 registros por pagina/carregamento.
+- A recuperacao de senha gera um link temporario na tela para simular o envio por e-mail no contexto academico.
+- O fluxo JWT esta disponivel em /api/auth/login, /api/auth/refresh e /api/auth/revoke.

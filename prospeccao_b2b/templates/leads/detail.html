@@ -1,0 +1,91 @@
+{% extends "shared/base.html" %}
+{% block title %}Lead · Prospeccao B2B{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <h1>{{ lead.razao_social }}</h1>
+        <p>{{ lead.cnpj }} · {{ lead.municipio or "-" }}/{{ lead.uf or "-" }}</p>
+    </div>
+    <form method="post" action="{{ url_for('leads.remover', lead_id=lead.id) }}" onsubmit="return confirm('Remover este lead do funil?')">
+        <button type="submit" class="danger">Remover lead</button>
+    </form>
+</section>
+
+<section class="two-columns">
+    <article class="panel">
+        <h2>Dados do lead</h2>
+        <dl class="data-list">
+            <div><dt>Status</dt><dd>{{ lead.status }}</dd></div>
+            <div><dt>Consultor</dt><dd>{{ lead.consultor_nome }}</dd></div>
+            <div><dt>CNAE</dt><dd>{{ lead.cnae_principal }} - {{ lead.cnae_descricao or "-" }}</dd></div>
+            <div><dt>Porte</dt><dd>{{ lead.porte or "-" }}</dd></div>
+            <div><dt>Capital</dt><dd>R$ {{ "%.2f"|format(lead.capital_social or 0) }}</dd></div>
+            <div><dt>Situacao</dt><dd>{{ lead.situacao or "-" }}</dd></div>
+            <div><dt>Contato</dt><dd>{{ lead.telefone or "-" }} · {{ lead.email or "-" }}</dd></div>
+            <div><dt>Endereco</dt><dd>{{ lead.logradouro or "-" }}, {{ lead.numero or "-" }} - {{ lead.bairro or "-" }}</dd></div>
+        </dl>
+
+        <form method="post" action="{{ url_for('leads.atualizar_status', lead_id=lead.id) }}" class="form-stack">
+            <label>Status
+                <select name="status">
+                    {% for status in status_lead %}
+                        <option value="{{ status }}" {% if lead.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Observacoes
+                <textarea name="observacoes">{{ lead.observacoes or "" }}</textarea>
+            </label>
+            <button type="submit">Atualizar status</button>
+        </form>
+    </article>
+
+    <article class="panel">
+        <h2>Registrar interacao</h2>
+        <form method="post" action="{{ url_for('leads.criar_interacao', lead_id=lead.id) }}" class="form-stack">
+            <label>Tipo
+                <select name="tipo">
+                    {% for tipo in tipos_interacao %}
+                        <option value="{{ tipo }}">{{ tipo }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Descricao
+                <textarea name="descricao" required placeholder="Resumo do contato realizado"></textarea>
+            </label>
+            <button type="submit">Registrar</button>
+        </form>
+    </article>
+</section>
+
+<section class="panel">
+    <h2>Historico de interacoes</h2>
+    <div class="timeline">
+        {% for item in interacoes %}
+            <article class="timeline-item">
+                <div>
+                    <strong>{{ item.tipo }}</strong>
+                    <span>{{ item.data_interacao }} · {{ item.consultor_nome }}</span>
+                </div>
+                <form method="post" action="{{ url_for('leads.editar_interacao', interacao_id=item.id) }}" class="inline-edit">
+                    <select name="tipo">
+                        {% for tipo in tipos_interacao %}
+                            <option value="{{ tipo }}" {% if item.tipo == tipo %}selected{% endif %}>{{ tipo }}</option>
+                        {% endfor %}
+                    </select>
+                    <input name="descricao" value="{{ item.descricao }}">
+                    <button type="submit" class="btn-ghost">Salvar</button>
+                </form>
+                {% if g.user.perfil == 'ADMIN' %}
+                    <form method="post" action="{{ url_for('leads.excluir_interacao', interacao_id=item.id) }}" onsubmit="return confirm('Excluir esta interacao?')">
+                        <button type="submit" class="danger">Excluir</button>
+                    </form>
+                {% endif %}
+            </article>
+        {% else %}
+            <p class="muted">Nenhuma interacao registrada.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "shared/base.html" %}
+{% block title %}Leads · Prospeccao B2B{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <h1>Funil de prospeccao</h1>
+        <p>Consultores veem apenas seus leads. Administradores podem filtrar todos os leads por consultor.</p>
+    </div>
+</section>
+
+<section class="panel">
+    <form method="get" class="filters lead-filters">
+        <label>Status
+            <select name="status">
+                <option value="">Todos</option>
+                {% for status in status_lead %}
+                    <option value="{{ status }}" {% if filtros.status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        {% if g.user.perfil == 'ADMIN' %}
+            <label>Consultor
+                <select name="consultor_id">
+                    <option value="">Todos</option>
+                    {% for consultor in consultores %}
+                        <option value="{{ consultor.id }}" {% if filtros.consultor_id|string == consultor.id|string %}selected{% endif %}>
+                            {{ consultor.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+        {% endif %}
+        <label>Busca<input name="busca" value="{{ filtros.busca }}" placeholder="Empresa ou CNPJ"></label>
+        <button type="submit">Filtrar</button>
+    </form>
+</section>
+
+<section class="table-panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>CNPJ</th>
+                <th>Status</th>
+                <th>Consultor</th>
+                <th>Local</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+                <tr>
+                    <td>{{ lead.razao_social }}</td>
+                    <td>{{ lead.cnpj }}</td>
+                    <td><span class="badge">{{ lead.status }}</span></td>
+                    <td>{{ lead.consultor_nome }}</td>
+                    <td>{{ lead.municipio or "-" }}/{{ lead.uf or "-" }}</td>
+                    <td><a class="btn-link" href="{{ url_for('leads.detalhe', lead_id=lead.id) }}">Abrir</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6">Nenhum lead encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

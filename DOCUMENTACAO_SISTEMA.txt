@@ -1,0 +1,1058 @@
+DOCUMENTACAO DO SISTEMA PROSPECCAO B2B
+
+Este arquivo explica a organizacao do projeto, arquivo por arquivo, e mostra como as funcionalidades se conectam de forma logica.
+
+
+1. VISAO GERAL
+
+O sistema e uma aplicacao web Flask organizada no padrao MVC.
+
+MVC significa:
+
+- Model: arquivos que conversam com o banco de dados.
+- View: telas HTML exibidas para o usuario.
+- Controller: arquivos que recebem as rotas, tratam formularios e chamam os services.
+
+Neste projeto tambem existe uma camada Service:
+
+- Service: regras de negocio. Ela fica entre o Controller e o Model.
+
+Fluxo comum:
+
+Usuario acessa uma tela
+-> Controller recebe a requisicao
+-> Service aplica a regra de negocio
+-> Model consulta ou grava no PostgreSQL
+-> Controller devolve uma View HTML ou resposta JSON
+
+
+2. ESTRUTURA PRINCIPAL
+
+.
++-- prospeccao_b2b/
+|   +-- controllers/
+|   +-- models/
+|   +-- services/
+|   +-- templates/
+|   +-- static/
+|   +-- utils/
+|   +-- app.py
+|   +-- app_factory.py
+|   +-- config.py
+|   +-- db.py
+|   +-- init_db.py
+|   +-- requirements.txt
+|   +-- schema.sql
++-- database/
+|   +-- schema.sql
+|   +-- indexes.sql
++-- README.md
++-- RUN_SYSTEM.txt
++-- requirements.txt
++-- DOCUMENTACAO_SISTEMA.txt
+
+
+3. ARQUIVOS DA RAIZ
+
+README.md
+
+Explica resumidamente o objetivo do sistema, a estrutura principal e quais requisitos foram atendidos.
+Serve como apresentacao rapida do projeto.
+
+
+RUN_SYSTEM.txt
+
+Mostra o passo a passo para rodar o sistema:
+
+- entrar na pasta prospeccao_b2b
+- criar ambiente virtual
+- instalar dependencias
+- configurar PostgreSQL
+- rodar init_db.py
+- iniciar app.py
+
+Tambem explica como resolver o bloqueio do PowerShell ao ativar o ambiente virtual.
+
+
+requirements.txt
+
+Lista geral de dependencias Python do projeto.
+O arquivo mais importante para rodar a aplicacao e o requirements.txt dentro da pasta prospeccao_b2b.
+
+
+DOCUMENTACAO_SISTEMA.txt
+
+Este arquivo.
+Serve para explicar a organizacao do sistema de forma didatica.
+
+
+4. PASTA database
+
+database/schema.sql
+
+Contem a estrutura principal do banco PostgreSQL.
+Cria as tabelas:
+
+- usuarios
+- empresas
+- leads
+- interacoes
+- password_reset_tokens
+- refresh_tokens
+
+Use este arquivo como referencia para entender o modelo de dados.
+
+
+database/indexes.sql
+
+Contem indices para melhorar a performance das consultas.
+Exemplos:
+
+- busca por CNAE
+- busca por capital social
+- busca por UF e municipio
+- listagem de leads por consultor e status
+- historico de interacoes por lead
+
+
+5. PASTA prospeccao_b2b
+
+Esta e a pasta principal da aplicacao.
+E nela que ficam o Flask, as regras de negocio, o acesso ao banco e as telas.
+
+
+prospeccao_b2b/app.py
+
+Arquivo de entrada do sistema.
+Ele importa create_app de app_factory.py, cria a aplicacao Flask e roda o servidor quando executado diretamente.
+
+Quando voce executa:
+
+python app.py
+
+e este arquivo que inicia o sistema.
+
+
+prospeccao_b2b/app_factory.py
+
+Cria e configura a aplicacao Flask.
+
+Responsabilidades:
+
+- carregar configuracoes do config.py
+- registrar os controllers/blueprints
+- carregar o usuario logado antes de cada requisicao
+
+Controllers registrados:
+
+- auth_bp
+- company_bp
+- lead_bp
+- admin_bp
+
+
+prospeccao_b2b/config.py
+
+Centraliza configuracoes do sistema.
+
+Le variaveis do arquivo .env, como:
+
+- DB_HOST
+- DB_PORT
+- DB_NAME
+- DB_USER
+- DB_PASSWORD
+- FLASK_SECRET
+- BRASILAPI_URL
+- PAGE_SIZE
+- ADMIN_EMAIL
+- ADMIN_PASSWORD
+- JWT_SECRET
+- JWT_ALGORITHM
+
+Assim o codigo nao precisa ter senha ou configuracao fixa dentro dos arquivos Python.
+
+
+prospeccao_b2b/db.py
+
+Centraliza a conexao com PostgreSQL usando psycopg.
+
+Funcoes principais:
+
+- get_conn: abre conexao com o banco
+- fetch_one: executa SELECT e retorna um unico registro
+- fetch_all: executa SELECT e retorna varios registros
+- execute: executa INSERT, UPDATE ou DELETE
+- execute_script: executa scripts SQL inteiros, usado no init_db.py
+
+Este arquivo evita repetir codigo de conexao em todos os models.
+
+
+prospeccao_b2b/init_db.py
+
+Inicializa o banco de dados.
+
+Quando voce roda:
+
+python init_db.py
+
+ele faz:
+
+1. cria a aplicacao Flask
+2. le o arquivo schema.sql
+3. cria as tabelas no PostgreSQL
+4. verifica se o admin inicial existe
+5. cria o admin inicial se ainda nao existir
+
+O admin inicial vem do .env:
+
+- ADMIN_EMAIL
+- ADMIN_PASSWORD
+
+
+prospeccao_b2b/schema.sql
+
+Schema usado diretamente pela aplicacao ao rodar init_db.py.
+
+Ele cria as mesmas tabelas principais:
+
+- usuarios
+- empresas
+- leads
+- interacoes
+- password_reset_tokens
+- refresh_tokens
+
+Este e o arquivo de schema mais importante para execucao da aplicacao.
+
+
+prospeccao_b2b/requirements.txt
+
+Dependencias necessarias para rodar a aplicacao.
+
+Principais pacotes:
+
+- Flask: framework web
+- psycopg[binary]: conexao PostgreSQL
+- requests: chamada para BrasilAPI
+- python-dotenv: leitura do .env
+- bcrypt: hash de senhas
+- python-jose: criacao de JWT
+
+
+prospeccao_b2b/.env
+
+Arquivo local de configuracao.
+Nao deve ser enviado para repositorio publico.
+
+Contem dados reais do ambiente, como senha do banco e segredo da aplicacao.
+
+
+prospeccao_b2b/.env.example
+
+Modelo de configuracao.
+Serve para mostrar quais variaveis o sistema precisa.
+
+Ao configurar em outra maquina, copie para .env e ajuste os valores.
+
+
+6. PASTA controllers
+
+Controllers recebem as rotas do Flask.
+Eles nao devem ter muita regra de negocio.
+O papel deles e receber a requisicao, chamar services/models e devolver tela ou JSON.
+
+
+prospeccao_b2b/controllers/__init__.py
+
+Marca a pasta controllers como pacote Python.
+Nao possui regra de negocio.
+
+
+prospeccao_b2b/controllers/auth_controller.py
+
+Controla autenticacao.
+
+Rotas principais:
+
+- /login
+- /logout
+- /recuperar-senha
+- /resetar-senha/<token>
+- /api/auth/login
+- /api/auth/refresh
+- /api/auth/revoke
+
+Funcionalidades:
+
+- login por sessao Flask
+- logout
+- recuperacao de senha por token
+- login API com JWT
+- refresh token
+- revogacao de refresh token
+
+Ele chama:
+
+- AuthService
+- TokenService
+
+
+prospeccao_b2b/controllers/company_controller.py
+
+Controla a area de busca e qualificacao de empresas.
+
+Rotas principais:
+
+- /
+- /empresas/consultar
+- /leads/criar
+- /privacidade
+
+Funcionalidades:
+
+- exibe dashboard de empresas
+- filtra empresas por CNAE, capital, porte, UF, municipio, situacao e busca textual
+- consulta CNPJ via BrasilAPI
+- cria lead a partir de uma empresa consultada
+- mostra politica de privacidade/LGPD
+
+Ele chama:
+
+- CompanyService
+- LeadService
+
+
+prospeccao_b2b/controllers/lead_controller.py
+
+Controla o funil de leads e historico de interacoes.
+
+Rotas principais:
+
+- /leads
+- /leads/<lead_id>
+- /leads/<lead_id>/status
+- /leads/<lead_id>/remover
+- /leads/<lead_id>/interacoes
+- /leads/interacoes/<interacao_id>/editar
+- /leads/interacoes/<interacao_id>/excluir
+
+Funcionalidades:
+
+- listar leads
+- filtrar leads por status, consultor e busca
+- abrir detalhes de um lead
+- atualizar status do funil
+- remover lead
+- registrar interacao
+- editar interacao em ate 24 horas
+- excluir interacao apenas como administrador
+
+Regras de permissao:
+
+- consultor ve apenas seus leads
+- administrador pode ver todos
+
+
+prospeccao_b2b/controllers/admin_controller.py
+
+Controla o modulo administrativo.
+
+Rotas principais:
+
+- /admin/consultores
+- /admin/relatorio
+
+Funcionalidades:
+
+- listar usuarios
+- cadastrar consultor ou administrador
+- editar nome, e-mail, perfil e status ativo/inativo
+- visualizar relatorio global por consultor e status
+
+Somente usuarios ADMIN podem acessar essas rotas.
+
+
+7. PASTA models
+
+Models acessam diretamente o banco de dados.
+Eles montam e executam SQL.
+
+
+prospeccao_b2b/models/__init__.py
+
+Marca a pasta models como pacote Python.
+
+
+prospeccao_b2b/models/user_model.py
+
+Model da tabela usuarios.
+
+Funcoes principais:
+
+- find_by_id
+- find_by_email
+- list_consultores
+- create
+- update
+- update_password
+
+Usado em:
+
+- login
+- administracao de usuarios
+- recuperacao de senha
+- carregamento do usuario logado
+
+
+prospeccao_b2b/models/company_model.py
+
+Model da tabela empresas.
+
+Funcoes principais:
+
+- upsert_from_api
+- find_by_cnpj
+- list_filtered
+
+Responsabilidades:
+
+- salvar ou atualizar empresa vinda da BrasilAPI
+- buscar empresa por CNPJ
+- listar empresas filtrando por CNAE, capital, porte, UF, municipio e situacao
+- gravar dados JSONB como socios, CNAEs secundarios e retorno bruto da API
+
+
+prospeccao_b2b/models/lead_model.py
+
+Model da tabela leads.
+
+Constante:
+
+- STATUS_LEAD: lista dos status validos do funil
+
+Status:
+
+- Lead Novo
+- Em Contato
+- Negociando
+- Cliente
+- Rejeitado
+
+Funcoes principais:
+
+- create
+- find_by_id
+- list_filtered
+- update_status
+- delete
+- report_by_consultor_status
+
+Usado no funil e no relatorio administrativo.
+
+
+prospeccao_b2b/models/interaction_model.py
+
+Model da tabela interacoes.
+
+Constante:
+
+- TIPOS_INTERACAO
+
+Tipos:
+
+- LIGACAO
+- EMAIL
+- REUNIAO
+- OUTRO
+
+Funcoes principais:
+
+- list_by_lead
+- create
+- find_by_id
+- update
+- delete
+
+Regra importante:
+
+- update so edita interacao registrada nas ultimas 24 horas.
+
+
+prospeccao_b2b/models/password_reset_model.py
+
+Model da tabela password_reset_tokens.
+
+Funcoes principais:
+
+- create
+- find_valid
+- mark_used
+
+Responsabilidade:
+
+- criar token temporario para redefinir senha
+- validar token ainda nao usado e nao expirado
+- marcar token como usado
+
+
+prospeccao_b2b/models/refresh_token_model.py
+
+Model da tabela refresh_tokens.
+
+Funcoes principais:
+
+- create
+- find_valid
+- revoke
+
+Responsabilidade:
+
+- criar refresh token para API
+- validar refresh token ativo
+- revogar refresh token no logout/API
+
+
+8. PASTA services
+
+Services concentram regras de negocio.
+Eles sao chamados pelos controllers e usam os models quando precisam acessar banco.
+
+
+prospeccao_b2b/services/__init__.py
+
+Marca a pasta services como pacote Python.
+
+
+prospeccao_b2b/services/auth_service.py
+
+Regras de autenticacao.
+
+Funcoes principais:
+
+- authenticate
+- request_password_reset
+- reset_password
+
+Responsabilidades:
+
+- verificar e-mail e senha
+- impedir login de usuario inativo
+- gerar token de recuperacao de senha
+- alterar senha com hash bcrypt
+
+
+prospeccao_b2b/services/token_service.py
+
+Regras de JWT e refresh token.
+
+Funcoes principais:
+
+- create_access_token
+- create_refresh_token
+- refresh_access_token
+- revoke_refresh_token
+
+Responsabilidades:
+
+- gerar access token JWT com validade de 30 minutos
+- gerar refresh token com validade de 7 dias
+- renovar access token usando refresh token valido
+- revogar refresh token
+
+
+prospeccao_b2b/services/company_service.py
+
+Regras de consulta de empresas.
+
+Funcoes principais:
+
+- consultar_cnpj
+- listar_empresas
+
+Responsabilidades:
+
+- limpar e validar CNPJ
+- chamar BrasilAPI
+- tratar erro de CNPJ nao encontrado
+- salvar empresa consultada no banco
+- listar empresas com filtros
+
+
+prospeccao_b2b/services/lead_service.py
+
+Regras do funil de leads.
+
+Funcoes principais:
+
+- criar_lead
+- validar_acesso
+- atualizar_status
+- remover
+
+Responsabilidades:
+
+- garantir que a empresa exista antes de criar lead
+- impedir consultor de alterar lead de outro consultor
+- validar status do funil
+- remover lead com permissao correta
+
+
+prospeccao_b2b/services/admin_service.py
+
+Regras administrativas.
+
+Funcoes principais:
+
+- criar_consultor
+- editar_consultor
+- relatorio_global
+
+Responsabilidades:
+
+- criar usuario com senha criptografada
+- editar dados e status de usuario
+- montar relatorio de leads por consultor e status
+
+
+9. PASTA utils
+
+Utils guardam funcoes auxiliares reutilizadas em varias partes do sistema.
+
+
+prospeccao_b2b/utils/__init__.py
+
+Marca a pasta utils como pacote Python.
+
+
+prospeccao_b2b/utils/auth.py
+
+Contem decoradores de permissao.
+
+Funcoes:
+
+- login_required
+- admin_required
+
+login_required:
+
+- exige usuario logado.
+
+admin_required:
+
+- exige usuario logado e perfil ADMIN.
+
+Usado nos controllers para proteger rotas.
+
+
+prospeccao_b2b/utils/formatters.py
+
+Funcoes de formatacao e normalizacao.
+
+Funcoes:
+
+- only_numbers: remove tudo que nao for numero
+- decimal_or_zero: converte valor para Decimal ou retorna zero
+- normalize_status: normaliza texto de status
+
+Usado principalmente em CNPJ e capital social.
+
+
+prospeccao_b2b/utils/security.py
+
+Funcoes de seguranca de senha.
+
+Funcoes:
+
+- hash_password
+- verify_password
+
+Usa bcrypt diretamente.
+
+hash_password:
+
+- gera hash seguro da senha.
+
+verify_password:
+
+- compara senha digitada com hash salvo no banco.
+
+Observacao:
+
+- bcrypt aceita no maximo 72 bytes de senha.
+
+
+10. PASTA templates
+
+Templates sao as telas HTML do sistema.
+Eles sao as Views do MVC.
+
+
+prospeccao_b2b/templates/shared/base.html
+
+Template base do sistema.
+
+Define:
+
+- cabecalho
+- menu principal
+- area de mensagens flash
+- bloco de conteudo
+
+Todas as telas principais herdam deste arquivo.
+
+
+prospeccao_b2b/templates/index.html
+
+Tela inicial apos login.
+
+Funcionalidades:
+
+- busca e filtro de empresas
+- consulta de CNPJ
+- exibicao de empresas encontradas
+- botao para adicionar empresa como lead
+
+
+prospeccao_b2b/templates/privacy.html
+
+Tela de politica de privacidade/LGPD.
+
+Explica:
+
+- uso de dados empresariais
+- protecao de senha
+- acesso por perfil
+- finalidade de prospeccao B2B
+
+
+prospeccao_b2b/templates/auth/login.html
+
+Tela de login.
+
+Campos:
+
+- e-mail
+- senha
+
+Tambem possui link para recuperar senha.
+
+
+prospeccao_b2b/templates/auth/forgot_password.html
+
+Tela para solicitar recuperacao de senha.
+
+No contexto academico, mostra um link temporario para simular envio por e-mail.
+
+
+prospeccao_b2b/templates/auth/reset_password.html
+
+Tela para cadastrar nova senha usando token de recuperacao.
+
+Campos:
+
+- nova senha
+- confirmar senha
+
+
+prospeccao_b2b/templates/leads/index.html
+
+Tela de listagem de leads.
+
+Funcionalidades:
+
+- filtro por status
+- filtro por consultor quando usuario e ADMIN
+- busca por empresa ou CNPJ
+- link para abrir detalhe do lead
+
+
+prospeccao_b2b/templates/leads/detail.html
+
+Tela de detalhe de um lead.
+
+Funcionalidades:
+
+- mostra dados da empresa
+- mostra dados do lead
+- atualiza status
+- edita observacoes
+- registra interacao
+- lista historico de interacoes
+- permite editar interacao em ate 24 horas
+- permite admin excluir interacao
+- permite remover lead
+
+
+prospeccao_b2b/templates/admin/consultores.html
+
+Tela administrativa de usuarios.
+
+Funcionalidades:
+
+- cadastrar usuario
+- escolher perfil ADMIN ou CONSULTOR
+- editar nome, e-mail e perfil
+- ativar ou inativar usuario
+
+
+prospeccao_b2b/templates/admin/relatorio.html
+
+Tela de relatorio global.
+
+Mostra total de leads por consultor e por status:
+
+- Lead Novo
+- Em Contato
+- Negociando
+- Cliente
+- Rejeitado
+
+
+11. PASTA static
+
+prospeccao_b2b/static/style.css
+
+Arquivo CSS do sistema.
+
+Define:
+
+- layout geral
+- menu superior
+- formularios
+- tabelas
+- cards
+- mensagens de sucesso/erro
+- responsividade para telas menores
+
+
+12. FUNCIONALIDADES DO SISTEMA POR FLUXO
+
+12.1 Login
+
+1. Usuario acessa /login.
+2. auth_controller recebe e-mail e senha.
+3. AuthService.authenticate valida os dados.
+4. UserModel.find_by_email busca usuario.
+5. verify_password compara senha com hash bcrypt.
+6. Se estiver correto, user_id e salvo na sessao.
+7. Usuario entra no sistema.
+
+
+12.2 Logout
+
+1. Usuario clica em Sair.
+2. auth_controller limpa a sessao.
+3. Usuario volta para /login.
+
+
+12.3 Consulta de CNPJ
+
+1. Usuario informa CNPJ na tela inicial.
+2. company_controller chama CompanyService.consultar_cnpj.
+3. O service limpa e valida o CNPJ.
+4. O service chama BrasilAPI.
+5. CompanyModel.upsert_from_api salva ou atualiza a empresa no PostgreSQL.
+6. Usuario volta para a listagem de empresas.
+
+
+12.4 Filtro de empresas
+
+1. Usuario preenche filtros na tela inicial.
+2. company_controller monta dicionario de filtros.
+3. CompanyService chama CompanyModel.list_filtered.
+4. O model monta SQL com filtros.
+5. A tela exibe as empresas encontradas.
+
+
+12.5 Criar lead
+
+1. Usuario clica em Adicionar lead.
+2. company_controller chama LeadService.criar_lead.
+3. LeadService verifica se a empresa existe.
+4. LeadModel.create cria registro na tabela leads.
+5. Lead aparece no funil do consultor.
+
+
+12.6 Listar leads
+
+1. Usuario acessa /leads.
+2. lead_controller chama LeadModel.list_filtered.
+3. Se for CONSULTOR, filtra apenas leads dele.
+4. Se for ADMIN, pode ver todos e filtrar por consultor.
+5. Tela lista os leads.
+
+
+12.7 Atualizar status do lead
+
+1. Usuario abre detalhe do lead.
+2. Escolhe novo status.
+3. lead_controller chama LeadService.atualizar_status.
+4. LeadService valida permissao e status.
+5. LeadModel.update_status grava no banco.
+
+
+12.8 Registrar interacao
+
+1. Usuario abre detalhe do lead.
+2. Informa tipo e descricao.
+3. lead_controller valida acesso ao lead.
+4. InteractionModel.create grava no banco.
+5. Historico aparece na tela.
+
+
+12.9 Editar interacao
+
+1. Usuario edita uma interacao.
+2. InteractionModel.update tenta atualizar.
+3. O SQL so permite se data_interacao for menor ou igual a 24 horas.
+4. Se passou de 24 horas, a edicao nao acontece.
+
+
+12.10 Excluir interacao
+
+1. Somente ADMIN ve a opcao de excluir.
+2. admin_required protege a rota.
+3. InteractionModel.delete remove o registro.
+
+
+12.11 Cadastrar consultor
+
+1. ADMIN acessa /admin/consultores.
+2. Preenche nome, e-mail, senha e perfil.
+3. AdminService.criar_consultor gera hash da senha.
+4. UserModel.create grava usuario.
+
+
+12.12 Relatorio global
+
+1. ADMIN acessa /admin/relatorio.
+2. AdminService.relatorio_global chama LeadModel.report_by_consultor_status.
+3. O sistema agrupa leads por consultor e status.
+4. A tela exibe os totais.
+
+
+12.13 Recuperacao de senha
+
+1. Usuario acessa Esqueci minha senha.
+2. Informa e-mail.
+3. AuthService.request_password_reset gera token.
+4. PasswordResetModel.create salva token com validade de 1 hora.
+5. Usuario acessa link gerado.
+6. AuthService.reset_password valida token.
+7. UserModel.update_password grava nova senha com bcrypt.
+8. Token e marcado como usado.
+
+
+12.14 JWT e refresh token
+
+Rotas API:
+
+- /api/auth/login
+- /api/auth/refresh
+- /api/auth/revoke
+
+Fluxo:
+
+1. Cliente envia e-mail e senha para /api/auth/login.
+2. Sistema retorna access_token e refresh_token.
+3. Quando access_token expira, cliente envia refresh_token para /api/auth/refresh.
+4. Sistema retorna novo access_token.
+5. Cliente pode revogar refresh_token em /api/auth/revoke.
+
+
+13. TABELAS DO BANCO
+
+usuarios
+
+Armazena usuarios do sistema.
+
+Campos principais:
+
+- id
+- nome
+- email
+- senha_hash
+- perfil
+- ativo
+
+
+empresas
+
+Armazena dados das empresas vindas da BrasilAPI.
+
+Campos principais:
+
+- cnpj
+- razao_social
+- nome_fantasia
+- cnae_principal
+- porte
+- capital_social
+- situacao
+- municipio
+- uf
+- socios_json
+- dados_json
+
+
+leads
+
+Liga uma empresa a um consultor.
+
+Campos principais:
+
+- empresa_id
+- consultor_id
+- status
+- observacoes
+
+
+interacoes
+
+Historico de contatos com lead.
+
+Campos principais:
+
+- lead_id
+- consultor_id
+- tipo
+- descricao
+- data_interacao
+
+
+password_reset_tokens
+
+Tokens de recuperacao de senha.
+
+Campos principais:
+
+- usuario_id
+- token
+- expira_em
+- usado_em
+
+
+refresh_tokens
+
+Tokens usados para renovar JWT.
+
+Campos principais:
+
+- usuario_id
+- token
+- expira_em
+- revogado_em
+
+
+14. OBSERVACOES IMPORTANTES
+
+- Nao edite arquivos dentro de __pycache__. Eles sao gerados automaticamente pelo Python.
+- O arquivo .env contem dados sensiveis e nao deve ser publicado.
+- Sempre rode init_db.py antes de iniciar o sistema pela primeira vez.
+- A aplicacao principal esta em prospeccao_b2b/app.py.
+- O padrao MVC ajuda a manter cada responsabilidade no lugar certo:
+  Controller recebe requisicao.
+  Service aplica regra.
+  Model acessa banco.
+  Template exibe tela.

@@ -1,0 +1,24 @@
+{% extends "shared/base.html" %}
+{% block title %}Login · Prospeccao B2B{% endblock %}
+
+{% block content %}
+<section class="auth-panel">
+    <div>
+        <h1>Acesse a plataforma</h1>
+        <p>Entre com seu e-mail e senha para buscar empresas, acompanhar leads e registrar interacoes.</p>
+    </div>
+
+    <form method="post" class="panel form-stack">
+        <label>
+            E-mail
+            <input type="email" name="email" required autofocus>
+        </label>
+        <label>
+            Senha
+            <input type="password" name="senha" required>
+        </label>
+        <button type="submit">Entrar</button>
+        <a class="muted" href="{{ url_for('auth.recuperar_senha') }}">Esqueci minha senha</a>
+    </form>
+</section>
+{% endblock %}
