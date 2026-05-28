@@ -8,11 +8,7 @@ from psycopg.rows import dict_row
 def get_conn():
     # 1. Abre a conexao usando os dados carregados no app Flask.
     return psycopg.connect(
-        host=current_app.config["DB_HOST"],
-        port=current_app.config["DB_PORT"],
-        dbname=current_app.config["DB_NAME"],
-        user=current_app.config["DB_USER"],
-        password=current_app.config["DB_PASSWORD"],
+        **current_app.config["DB_CONFIG"],
         row_factory=dict_row,
     )
 
